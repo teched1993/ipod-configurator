@@ -368,4 +368,85 @@ elif menu == "Configure iPod":
                 else:
                     inv[part][key] -= 1
 
+# --- Customer Configurator (Public UI) ---
+elif menu == "Customer Configurator":
+    st.header("🎧 iPod Configurator for Customers")
+
+    st.markdown(
+        """
+        Customize the exterior and estimate the resale value of your refurbished iPod.
+        """,
+        unsafe_allow_html=True,
+    )
+
+    model_generation = {
+        "iPod Video": "ipod5",
+        "iPod Classic 6G": "ipod7",
+        "iPod Classic 7G": "ipod7"
+    }
+
+    base_price = {
+        "iPod Video": 100,
+        "iPod Classic 6G": 110,
+        "iPod Classic 7G": 130
+    }
+
+    storage_upgrade_costs = {
+        "64GB": 20,
+        "128GB": 25,
+        "256GB": 35
+    }
+
+    high_capacity_battery_cost = 8
+
+    condition_discount = {
+        "Like New": 0,
+        "Good": -5,
+        "Fair": -10,
+        "Poor": -20
+    }
+
+    colors = ["black", "blue", "gold", "green", "red", "silver", "space_grey", "violet"]
+
+    def load_faceplate_image(model, color):
+        generation = model_generation[model]
+        if generation == "ipod5":
+            filename = f"{generation}_faceplate_clickwheel_{color}.png"
+        else:
+            filename = f"{generation}_faceplate_{color}.png"
+        path = os.path.join("images", filename)
+        if os.path.exists(path):
+            return Image.open(path)
+        return None
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        model = st.selectbox("iPod Model", list(model_generation.keys()))
+        condition = st.selectbox("Condition", list(condition_discount.keys()))
+        capacity = st.selectbox("Capacity", list(storage_upgrade_costs.keys()))
+        high_capacity_battery = st.checkbox("High Capacity Battery")
+
+    with col2:
+        color = st.selectbox("Faceplate Color", colors)
+        img = load_faceplate_image(model, color)
+        if img:
+            st.image(img, caption=f"{model} - {color.capitalize()}")
+        else:
+            st.warning("No preview available for this color.")
+
+    resale_price = base_price[model]
+    resale_price += storage_upgrade_costs[capacity]
+    resale_price += high_capacity_battery_cost if high_capacity_battery else 0
+    resale_price += condition_discount[condition]
+
+    st.markdown("---")
+    st.markdown("### 💰 Estimated Resale Summary")
+
+    st.markdown(f"**Model:** {model}")
+    st.markdown(f"**Condition:** {condition}")
+    st.markdown(f"**Capacity:** {capacity}")
+    st.markdown(f"**Faceplate Color:** {color.capitalize()}")
+    st.markdown(f"**High Capacity Battery:** {'Yes' if high_capacity_battery else 'No'}")
+    st.markdown(f"**Estimated Resale Price:** `{resale_price:.2f} €`")
 
